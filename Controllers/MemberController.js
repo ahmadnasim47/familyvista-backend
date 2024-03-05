@@ -4,11 +4,11 @@ const Member = require('../models/memberSchema');
 
 // Controller methods for tree operations
 // ... (previous controller code)
-
-
+//Code before  Image.
 
 const addRootMember = async (req, res) => {
     try {
+        // console.log(req);
         const { name, Dob } = req.body;
         console.log(req.body)
         const foundMember = await Member.findOne({});
@@ -29,6 +29,8 @@ const addRootMember = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Code with image
 const addChildMember = async (req, res) => {
     try {
         const { id } = req.params;
@@ -101,6 +103,10 @@ const getTree = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+
+
 
 module.exports = {
     addRootMember,
