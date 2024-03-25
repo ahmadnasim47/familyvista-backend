@@ -168,10 +168,10 @@ app.post('/register', upload.single('profileImage'), async (req, res) => {
 
 
 app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { cnic, password } = req.body;
   let user
   try {
-    user = await User.findOne({ email: email });
+    user = await User.findOne({ cnic: cnic });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -181,7 +181,7 @@ app.post('/login', async (req, res) => {
 
     if (passwordMatch) {
       const token = sendToken(user, 200);
-      return res.status(200).json({ message: "Logged in", token: token, userId: user._id})
+      return res.status(200).json({ message: "Logged in", token: token, userId: user._id, cnic: user.cnic})
     } else {
       return res.status(401).json({ message: 'Login failed: Incorrect password' });
     }
