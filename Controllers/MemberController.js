@@ -1,5 +1,6 @@
 // controllers/treeController.js
 
+const FamilyMember = require('../models/FamilyMember');
 const Member = require('../models/memberSchema');
 
 // Controller methods for tree operations
@@ -30,6 +31,33 @@ const addRootMember = async (req, res) => {
     }
 };
 
+const addFamilyMember = async (req, res) => {
+    try {
+        // console.log(req);
+        const { parentCnic } = req.params
+        const { name, cnic, gender } = req.body;
+        console.log(req.body)
+        const foundRootMember = await FamilyMember.findOne({ cnic: cnic });
+        if (!foundRootMember) {
+            // console.log()
+            const newFamilyMember = new FamilyMember({
+                name: name,
+                parent: { cnic: parentCnic },
+                gender: gender,
+                cnic: cnic,
+                children: []
+            });
+            console.log(newFamilyMember)
+            await newFamilyMember.save();
+            res.status(201).json({ message: "Family member added.", body: newFamilyMember });
+        } else {
+            res.status(400).json({ error: 'Family member already exists' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 // Code with image
 const addChildMember = async (req, res) => {
     try {
@@ -45,7 +73,7 @@ const addChildMember = async (req, res) => {
             await newChild.save();
             foundMember.children.push(newChild.id);
             await foundMember.save();
-           
+
 
             // Populate the parent member again to include the newly added child
             const updatedParent = await Member.findOne({ id: id }).populate('children');
@@ -111,6 +139,7 @@ const getTree = async (req, res) => {
 module.exports = {
     addRootMember,
     addChildMember,
+    addFamilyMember,
     updateMember,
     deleteMember,
     getTree, // Add the new method to export

@@ -6,7 +6,7 @@ const FamilyMember = require("../models/FamilyMember")
 const addRootMember = async (req, res) => {
     try {
         // console.log(req);
-        const { name, cnic, username, } = req.body;
+        const { name, cnic, username } = req.body;
         console.log(req.body)
         const foundRootMember = await RootUser.findOne({ cnic: cnic });
         if (!foundRootMember) {
@@ -27,6 +27,42 @@ const addRootMember = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+const fetchRootMemberByCnic = async (req, res) => {
+    try {
+        const { cnic } = req.params
+        const familyMemberFound = await FamilyMember.findOne({ cnic: cnic})
+        if(!familyMemberFound) {
+            return res.status(200).json({ message: "CNIC not found for any tree", success: false})
+        }
+        let familyMember = familyMemberFound
+        while(true) {
+            const parent = await FamilyMember.findOne({ cnic: familyMember.parent.cnic})
+            if(!parent){
+                break
+            }
+            familyMember = parent
+        }
+        console.log(familyMember)
+
+        const childOfRootFound = await RootUser.findOne({ children: {cnic: familyMember.cnic}})
+        let rootMemberFound
+        if(!childOfRootFound) {
+            console.log("in if")
+            rootMemberFound = await RootUser.findOne({ cnic: familyMember.parent.cnic})
+        } else {
+            rootMemberFound = await RootUser.findOne({ cnic: familyMember.cnic})
+        }
+
+        if(!rootMemberFound) {
+            return res.status(200).json({ message: "Root member not found", success: false})
+        }
+
+        res.status(200).json({ message: "Root member found.", success: true, body: rootMemberFound})
+    } catch (error) {
+        res.status(500).json({ error: error.message }); 
+    }
+}
 
 const getRootMember = async (req, res) => {
     try {
@@ -94,4 +130,4 @@ const getChildernToRoot = async (req, res) => {
     }
 }
 
-module.exports= {addRootMember, getRootMember, addChildernToRoot, getChildernToRoot}
+module.exports= {addRootMember, getRootMember, addChildernToRoot, getChildernToRoot, fetchRootMemberByCnic}

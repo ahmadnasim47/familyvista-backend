@@ -14,6 +14,8 @@ router.post('/addRootMember', RootMemberController.addRootMember);
 router.get('/getRootMember/:cnic', RootMemberController.getRootMember)
 router.post('/addChildernToRoot/:cnic', RootMemberController.addChildernToRoot)
 router.get('/getChildernToRoot/:cnic', RootMemberController.getChildernToRoot)
+router.get('/fetchRootMember/:cnic', RootMemberController.fetchRootMemberByCnic)
+router.post('/addFamilyMember/:parentCnic', MemberController.addFamilyMember)
 router.post('/addChildMember/:id', MemberController.addChildMember);
 router.put('/updateMember/:id', MemberController.updateMember); // Update route
 router.delete('/deleteMember/:id', MemberController.deleteMember); // Delete route
