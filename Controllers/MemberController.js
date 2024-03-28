@@ -37,9 +37,10 @@ const addFamilyMember = async (req, res) => {
         const { parentCnic } = req.params
         const { name, cnic, gender } = req.body;
         console.log(req.body)
-        const foundRootMember = await FamilyMember.findOne({ cnic: cnic });
-        if (!foundRootMember) {
-            // console.log()
+        const foundFamilyMember = await FamilyMember.findOne({ cnic: cnic });
+        const foundParent = await FamilyMember.findOne({ cnic: parentCnic})
+        if (!foundFamilyMember) {
+            console.log(foundParent)
             const newFamilyMember = new FamilyMember({
                 name: name,
                 parent: { cnic: parentCnic },
@@ -48,13 +49,37 @@ const addFamilyMember = async (req, res) => {
                 children: []
             });
             console.log(newFamilyMember)
+            foundParent.children.push({cnic: cnic})
             await newFamilyMember.save();
+            await foundParent.save()
             res.status(201).json({ message: "Family member added.", body: newFamilyMember });
         } else {
             res.status(400).json({ error: 'Family member already exists' });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+}
+
+const getChildrenToFamilyMember = async (req, res) => {
+    try {
+        const { parentCnic } = req.params
+        const familyMemberFound = await FamilyMember.findOne({cnic: parentCnic})
+        if(!familyMemberFound) {
+            return res.status(200).json({ message: "No family member found.", success: false})
+        }
+        console.log(familyMemberFound)
+        const childrenCnicList = familyMemberFound.children
+
+        const childrenListPromises = childrenCnicList.map((childCnic) => {
+            return FamilyMember.findOne({ cnic: childCnic.cnic})
+        })
+
+        const childrenList = await Promise.all(childrenListPromises)
+
+        res.status(200).json({ message: "Children found.", success: true, body: childrenList})
+    } catch (error) {
+        res.status(500).json({ error: error.message }); 
     }
 }
 
@@ -140,6 +165,7 @@ module.exports = {
     addRootMember,
     addChildMember,
     addFamilyMember,
+    getChildrenToFamilyMember,
     updateMember,
     deleteMember,
     getTree, // Add the new method to export
